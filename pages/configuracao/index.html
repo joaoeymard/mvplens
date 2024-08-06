@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Comandas Tech</title>
+
+  <link rel="stylesheet" href="../../assets/bootstrap/css/bootstrap.min.css">
+  <link rel="stylesheet" href="../../assets/notyf/notyf.min.css">
+  <link rel="stylesheet" href="../../styles/style.css">
+</head>
+
+<body class="bg-page">
+  <header></header>
+
+  <main class="container mt-4 mb-5" style="max-width: 800px;">
+
+    <h3 class="mt-3">Configurações</h3>
+    <div class="d-flex align-items-center my-2">
+      <div class="col-9">
+        <p class="m-0 p-0 fs-5">Importar dados</p>
+        <small class="text-secondary">
+          Recuperar suas informações do seu dispositivo.
+        </small>
+      </div>
+      <div class="col-3">
+        <label for="import-data" class="btn btn-sm btn-outline-secondary d-block ms-auto"
+          style="width: fit-content;">Importar</label>
+        <input id="import-data" type="file" class="form-control form-control-sm" hidden>
+      </div>
+    </div>
+    <div class="d-flex align-items-center my-2">
+      <div class="col-9">
+        <p class="m-0 p-0 fs-5">Exportar dados</p>
+        <small class="text-secondary">
+          Salvar suas informações no seu dispositivo.
+        </small>
+      </div>
+      <div class="col-3">
+        <button type="button" class="btn btn-sm btn-outline-secondary d-block ms-auto"
+          onclick="exportStorage()">Exportar</button>
+      </div>
+    </div>
+    <h3 class="mt-5">Estoque</h3>
+    <div class="d-flex align-items-center my-2">
+      <div class="col-9">
+        <p class="m-0 p-0 fs-5">Importar estoque</p>
+        <small class="text-secondary">
+          Recuperar informações do estoque do seu dispositivo.
+        </small>
+      </div>
+      <div class="col-3">
+        <label for="import-estoque" class="btn btn-sm btn-outline-secondary d-block ms-auto"
+          style="width: fit-content;">Importar</label>
+        <input id="import-estoque" type="file" class="form-control form-control-sm" hidden>
+      </div>
+    </div>
+    <div class="d-flex align-items-center my-2">
+      <div class="col-9">
+        <p class="m-0 p-0 fs-5">Exportar estoque</p>
+        <small class="text-secondary">
+          Recuperar informações do estoque do seu dispositivo.
+        </small>
+      </div>
+      <div class="col-3">
+        <button type="button" class="btn btn-sm btn-outline-secondary d-block ms-auto"
+          onclick="exportEstoque()">Exportar</button>
+      </div>
+    </div>
+    <div class="d-flex align-items-center my-2">
+      <div class="col-9">
+        <p class="m-0 p-0 fs-5">Restaurar estoque</p>
+        <small class="text-secondary">
+          Restaurar o estoque para o padrão de fábrica.
+        </small>
+      </div>
+      <div class="col-3">
+        <button type="button" class="btn btn-sm btn-outline-secondary d-block ms-auto"
+          onclick="restaurarEstoque()">Restaurar</button>
+      </div>
+    </div>
+
+  </main>
+
+  <footer class="bg-dark text-light d-none d-md-block"></footer>
+
+  <script src="../../assets/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script src="../../assets/axios.min.js"></script>
+  <script src="../../assets/vue.min.js"></script>
+  <script src="../../assets/numeral/numeral.min.js"></script>
+  <script src="../../assets/export-from-json.min.js"></script>
+  <script src="../../assets/notyf/notyf.min.js"></script>
+  <script src="../../assets/storage.js"></script>
+  <script src="../../scripts/main.js"></script>
+  <script src="../../scripts/helps/files.js"></script>
+  <script src="../../scripts/init.js"></script>
+
+  <script>
+    const stComandas = stEstoque.filter();
+    const notyf = new Notyf();
+
+    function exportStorage() {
+      const nameFile = `dbLens_Sales_${new Date().toJSON().slice(0, 10).replace(/-/g, '')}`;
+      const content = JSON.stringify(stSales.data);
+
+      exportData(nameFile, content)
+    }
+    function exportEstoque() {
+      const nameFile = `dbLens_Inventory_${new Date().toJSON().slice(0, 10).replace(/-/g, '')}`;
+      const content = JSON.stringify(stEstoque.data);
+
+      exportData(nameFile, content)
+    }
+    function restaurarEstoque() {
+      if (!confirm('Deseja realmente restaurar o estoque para o padrão de fábrica?')) return;
+      stEstoque.data = stEstoqueDefault;
+    }
+
+    document.querySelector('#import-data')
+      .addEventListener('change', async function (ev) {
+        try {
+
+          stComandas.data = JSON.parse(
+            await getFileReader(ev.target.files[0])
+          );
+
+          notyf.success('Seus dados foram recuperados.');
+
+        } catch (error) {
+          console.log(error);
+          notyf.error(error.message || 'Falha ao carregar o arquivo.');
+        } finally {
+          ev.target.value = '';
+        }
+      });
+
+    document.querySelector('#import-estoque')
+      .addEventListener('change', async function (ev) {
+        try {
+
+          stEstoque.data = JSON.parse(
+            await getFileReader(ev.target.files[0])
+          );
+
+          notyf.success('Seus dados do estoque foram recuperados.');
+
+        } catch (error) {
+          console.log(error);
+          notyf.error(error.message || 'Falha ao carregar o arquivo do estoque.');
+        } finally {
+          ev.target.value = '';
+        }
+      });
+  </script>
+</body>
+
+</html>

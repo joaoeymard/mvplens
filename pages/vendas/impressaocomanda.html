@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Comandas Tech</title>
+
+  <link rel="stylesheet" href="../../assets/bootstrap/css/bootstrap.min.css">
+  <link rel="stylesheet" href="../../styles/style.css">
+</head>
+
+<body class="bg-page">
+  <main class="container-fluid">
+
+    <br>
+    <p><b>MAJOR FOODS</b></p>
+
+    <p>
+      -<br>
+      Major {{ (comanda.nome || '').toUpperCase() }}<br>
+    </p>
+
+    -<br>
+    <ul class="m-0" style="list-style: none; padding: 0;">
+      <li v-for="item in comanda.itens" class="m-0">
+        {{ (item.nome || '').toUpperCase() }}<br>
+        {{ fillsSpaces((item.quantidade +' x '+ displayNumber(item.valor)), 22) }}
+        {{ displayNumber(numeral(item.valor).multiply(item.quantidade).value()) }}
+      </li>
+    </ul>
+
+    <p v-if="comanda.observacao">
+      -<br>
+      OBS.: {{ comanda.observacao }}
+    </p>
+
+    <p>
+      -<br>
+      {{ fillsSpaces('', 33) }}<br>
+    </p>
+
+    <p><b>MAJOR FOODS</b></p>
+
+    <p>
+      -<br>
+      Major {{ (comanda.nome || '').toUpperCase() }}<br>
+      TEL: {{ comanda.contato }}<br>
+      ENDEREÇO:<br>
+      {{ comanda.logradouro }}, {{ comanda.logradouroNumero }} - {{ comanda.complemento || '' }} - {{ comanda.bairro }},
+      {{
+      comanda.cidade }}
+    </p>
+    <p v-if="comanda.referencia">REF.: {{ comanda.referencia }}</p>
+
+    -<br>
+
+    <ul class="m-0" style="list-style: none; padding: 0;">
+      <li v-for="item in comanda.itens" class="m-0">
+        {{ (item.nome || '').toUpperCase() }}<br>
+        {{ fillsSpaces((item.quantidade +' x '+ displayNumber(item.valor)), 22) }}
+        {{ displayNumber(numeral(item.valor).multiply(item.quantidade).value()) }}
+      </li>
+    </ul>
+    <p v-if="comanda.observacao">
+      -<br>
+      OBS.: {{ comanda.observacao }}
+    </p>
+
+    <p>
+      -<br>
+      <b>
+        {{ fillsSpaces('TOTAL', 20) }}
+        {{ displayCurrency(commandValue( comanda )) }}
+      </b>
+      <br>
+      {{ fillsSpaces((comanda.formaPagamento || 'DINHEIRO').toUpperCase(), 20) }}
+      {{ displayCurrency(comanda.valorPago || 0) }}
+      <br>
+      {{ fillsSpaces('TROCO', 20) }}
+      {{ displayCurrency(subtraction((comanda.valorPago || 0), commandValue(comanda)) > 0 ?
+      subtraction((comanda.valorPago || 0), commandValue(comanda)) : 0 ) }}
+    </p>
+
+    <p>{{ fillsSpaces('', 33) }}<br></p>
+    <br>
+
+
+  </main>
+
+  <script src="../../assets/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script src="../../assets/axios.min.js"></script>
+  <script src="../../assets/vue.min.js"></script>
+  <script src="../../assets/numeral/numeral.min.js"></script>
+  <script src="../../assets/storage.js"></script>
+  <script src="../../scripts/main.js"></script>
+
+  <script>
+    const v = new Vue({
+      el: 'main',
+      data: {
+        comanda: {
+          items: []
+        },
+      },
+      updated: function () {
+        this.$nextTick(function () {
+          window.print();
+        })
+      }
+    });
+
+    function startPrint(comandaId) {
+      v.comanda = stSaltes.find(c => c.id === comandaId);
+    }
+  </script>
+</body>
+
+</html>

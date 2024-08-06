@@ -1,0 +1,80 @@
+/* Estilos gerais */
+body {
+  display: flex;
+  min-height: 100vh;
+  flex-direction: column;
+}
+main {
+  flex: 1 0 auto;
+}
+
+/* Refazendo o bootstrap */
+.box-impressao-comprovante {
+  width: 50mm;
+  padding: 5mm 2mm;
+  font-size: 0.6em;
+}
+
+.table tr td {
+  vertical-align: middle;
+}
+
+/* Estilos do tema */
+.bg-page {
+  background-color: #f1f2f4;
+}
+.navbar-actions .nav-link {
+  transition: 0.3s;
+}
+.navbar-actions .nav-link:hover {
+  background-color: #f1f2f4;
+}
+.navbar-actions .nav-link.active {
+  background-color: #f1f2f4;
+}
+.btn-acao-pedido {
+  font-size: 0.8em;
+  padding: 8px;
+  min-width: 128px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.btn-acao-pedido svg {
+  height: 24px;
+  width: 24px;
+  margin: 0px;
+}
+.btn-acao-pedido span {
+  margin: auto;
+  padding: 0 8px;
+}
+
+/* Estilos da tabela */
+.table-modern {
+  border-collapse: separate;
+  border-spacing: 0 5px;
+}
+.table-modern thead tr {
+  background-color: transparent;
+}
+.table-modern thead tr th {
+  font-weight: normal;
+  color: #6c757d;
+}
+.table-modern tr td,
+.table-modern tr th {
+  white-space: nowrap;
+}
+.table-modern tbody tr td {
+  background-color: white;
+  padding: 1.15em 0.85em 1.15em;
+}
+.table-modern tbody tr td:first-child,
+.table-modern thead tr th:first-child {
+  padding-left: 1.25em;
+}
+.table-modern tbody tr td:last-child,
+.table-modern thead tr th:last-child {
+  padding-right: 1.25em;
+}

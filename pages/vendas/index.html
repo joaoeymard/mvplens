@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Comandas Tech</title>
+
+  <link rel="stylesheet" href="../../assets/bootstrap/css/bootstrap.min.css">
+  <link rel="stylesheet" href="../../assets/notyf/notyf.min.css">
+  <link rel="stylesheet" href="../../styles/style.css">
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
+    integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
+    crossorigin="" />
+
+  <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
+    integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
+    crossorigin=""></script>
+</head>
+
+<body class="bg-page">
+  <header></header>
+
+  <nav class="navbar navbar-expand-md navbar-light navbar-actions bg-white p-0">
+    <div class="container-fluid">
+      <div class="navbar-collapse">
+        <ul class="navbar-nav flex-row">
+          <li class="nav-item">
+            <a class="nav-link px-2 active" href="/pages/vendas/">Principal</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link px-2" href="/pages/vendas/relatorio.html">Relatório</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container mt-4 mb-5" style="max-width: 1440px;">
+
+    <div class="row">
+      <div class="col-3">
+        <div class="list-group">
+          <a href="#" class="list-group-item list-group-item-action mb-2 p-3 border-0 rounded-0"
+            v-on:click="limparFormulario">
+            <p class="m-0 text-truncate">+ Novo Pedido</p>
+          </a>
+          <a href="#" class="list-group-item list-group-item-action mb-1 p-3 border-0 rounded-0"
+            v-for="_comanda in comandas" v-on:click="() => { exibirComanda(_comanda.id) }">
+            <p class="m-0 text-truncate">{{ _comanda.nome }}</p>
+            <small class="d-flex justify-content-between text-muted">
+              <span>{{ displayPeriod(Date.now() - _comanda.pedido_em) }}</span>
+              <span>
+                {{ commandQtItems(_comanda) }} Itens - {{ displayCurrency( commandValue(_comanda) ) }}
+              </span>
+            </small>
+          </a>
+        </div>
+      </div>
+
+      <div class="col-9">
+
+        <form v-on:submit.prevent="salvarComanda()">
+
+          <div class="card border-0 rounded-0">
+            <div class="card-header p-4 border-0" v-if="comanda.id">
+              <div class="row">
+                <div class="col-4">
+                  #{{ comanda.id }}
+                </div>
+                <div class="col-8 ms-auto">
+                  <div class="d-flex justify-content-end">
+                    <div class="px-3 border-start">
+                      {{ comanda.despachado_em ? 'Despachado' : 'Aberto' }}
+                    </div>
+                    <div class="px-3 border-start">
+                      {{ comanda.pedido_em ? displayDateTime(comanda.pedido_em) : '' }}
+                    </div>
+                    <div class="px-3 border-start" v-if="!comanda.despachado_em">
+                      {{ displayPeriod(Date.now() - comanda.pedido_em) }}
+                    </div>
+                    <div class="px-3 border-start" v-if="comanda.despachado_em">
+                      {{ displayPeriod(comanda.despachado_em - comanda.pedido_em) }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="card-header p-4 border-0" v-if="!comanda.id">
+              <div class="row">
+                <div class="col-4">
+                  Novo Pedido
+                </div>
+              </div>
+            </div>
+            <div class="card-body p-4">
+
+              <div class="row g-3">
+                <div class="col-2">
+                  <label>Origem:</label>
+                  <input type="text" v-model="comanda.origem" class="form-control form-control-sm" list="opcoesOrigem"
+                    required>
+                  <datalist id="opcoesOrigem">
+                    <option>Whatsapp</option>
+                    <option>Ifood</option>
+                  </datalist>
+                </div>
+                <div class="col-5">
+                  <label>Nome:</label>
+                  <input type="text" v-model.trim="comanda.nome" class="form-control form-control-sm" autocomplete="no"
+                    v-bind:placeholder="clienteTemp.nome" v-on:keyup="buscarUltimoPedido" required>
+                </div>
+                <div class="col-5">
+                  <label>Contato:</label>
+                  <input type="text" v-model.trim="comanda.contato" class="form-control form-control-sm"
+                    autocomplete="no" v-bind:placeholder="clienteTemp.contato" v-on:keyup="buscarUltimoPedido">
+                </div>
+
+                <div class="col-8">
+                  <label>Endereço:</label>
+                  <div class="input-group">
+                    <input type="text" name="endereco" v-model.trim="comanda.logradouro"
+                      class="form-control form-control-sm" v-bind:placeholder="clienteTemp.logradouro"
+                      autocomplete="no">
+                    <input type="text" class="form-control form-control-sm" v-if="comanda.distanciaKm"
+                      v-bind:value="'~ ' + comanda.distanciaKm + 'km'" style="max-width: 120px;" disabled>
+                  </div>
+                </div>
+                <div class="col-2">
+                  <label>Número:</label>
+                  <input type="number" v-model="comanda.logradouroNumero" class="form-control form-control-sm"
+                    v-bind:placeholder="clienteTemp.logradouroNumero">
+                </div>
+                <div class="col-2">
+                  <label>Comp.:</label>
+                  <input type="text" v-model.trim="comanda.complemento" class="form-control form-control-sm"
+                    v-bind:placeholder="clienteTemp.complemento">
+                </div>
+                <div class="col-4">
+                  <label>Bairro:</label>
+                  <input type="text" v-model.trim="comanda.bairro" class="form-control form-control-sm"
+                    v-bind:placeholder="clienteTemp.bairro">
+                </div>
+                <div class="col-3">
+                  <label>Cidade:</label>
+                  <input type="text" v-model.trim="comanda.cidade" class="form-control form-control-sm"
+                    v-bind:placeholder="clienteTemp.cidade">
+                </div>
+                <div class="col-5">
+                  <label>Referencia:</label>
+                  <input type="text" v-model.trim="comanda.referencia" class="form-control form-control-sm"
+                    v-bind:placeholder="clienteTemp.referencia">
+                </div>
+                <div class="col-12 pt-2 d-flex justify-content-start flex-row-reverse">
+
+                  <button type="button" class="btn btn-sm btn-outline-secondary ms-2" v-if="comanda.id"
+                    data-bs-toggle="modal" data-bs-target="#modalMap">Consultar no
+                    mapa</button>
+                  <button type="button" class="btn btn-sm btn-outline-success ms-2" v-if="clienteTemp.id"
+                    v-on:click="recuperarUltimoPedido">Aplicar Cliente</button>
+
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <div class="p-4 pb-2">
+
+            <p class="d-block mt-4 mb-1 fs-5 text-dark">Adicionar Item</p>
+
+            <div id="sectionNovoItem" class="row g-3">
+              <div class="col-6 mb-2">
+                <label>Selecione um item:</label>
+                <select v-model="comandaItem.idx" class="form-select form-select-sm"
+                  v-on:change="atualizarValorCampoItem">
+                  <option v-bind:value="idx" v-for='(item, idx) in cardapio'>
+                    {{ item.nome }}
+                  </option>
+                </select>
+              </div>
+              <div class="col-2 mb-2">
+                <label>Valor:</label>
+                <input type="number" v-model="comandaItem.valor" step="0.01" class="form-control form-control-sm">
+              </div>
+              <div class="col-2 mb-2">
+                <label>Qt.:</label>
+                <input type="number" v-model="comandaItem.quantidade" step="1" class="form-control form-control-sm">
+              </div>
+              <div class="col-2 mb-2">
+                <button type="button" class="btn btn-sm btn-outline-primary d-block w-100 mt-4"
+                  v-on:click="adicionarItem">Adicionar</button>
+              </div>
+            </div>
+
+          </div>
+
+          <div class="table-responsive">
+            <table class="table table-sm table-hover table-borderless table-modern">
+              <thead>
+                <tr>
+                  <th class="w-75">Item</th>
+                  <th class="text-center">Qt</th>
+                  <th class="text-center">Valor</th>
+                  <th class="text-center"></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(item, idx) in comanda.itens">
+                  <td class="align-middle">{{ item.nome }}</td>
+                  <td class="align-middle text-center">{{ item.quantidade }}</td>
+                  <td class="align-middle text-center">
+                    {{ displayNumber(item.valor) }}
+                  </td>
+                  <td class="align-middle text-center">
+                    <button type="button" class="btn btn-sm btn-outline-danger"
+                      v-on:click="() => { removerItem(idx) }">Remover</button>
+                  </td>
+                </tr>
+                <tr>
+                  <td>Total</td>
+                  <td class="text-center">
+                    {{ comanda.itens.map(i => i.quantidade).reduce(sum, 0) }}
+                  </td>
+                  <td class="text-center">
+                    {{
+                    displayCurrency(
+                    comanda.itens.map(i => multiply(i.quantidade, i.valor))
+                    .reduce(sum, 0)
+                    )
+                    }}
+                  </td>
+                  <td></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="card border-0 rounded-0 mb-5">
+            <div class="card-header p-4 border-0">
+              <div class="row">
+                <div class="col-4">
+                  Outras Informações
+                </div>
+              </div>
+            </div>
+            <div class="card-body p-4">
+
+              <div class="row g-3">
+
+                <div class="col-12">
+                  <label>Observações do pedido:</label>
+                  <textarea v-model.trim="comanda.observacao" class="form-control form-control-sm" rows="2"></textarea>
+                </div>
+
+                <div class="col-6">
+                  <label>Forma de pagamento:</label>
+                  <input type="text" v-model="comanda.formaPagamento" class="form-control form-control-sm"
+                    list="formaPagamento">
+                  <datalist id="formaPagamento">
+                    <option>Dinheiro</option>
+                    <option>Pix</option>
+                    <option>Cartão de Crédito</option>
+                    <option>Cartão de Débito</option>
+                    <option>Picpay</option>
+                    <option>Ifood</option>
+                  </datalist>
+                </div>
+                <div class="col-3">
+                  <label>Valor à pagar:</label>
+                  <input type="number" step="0.01" v-model='comanda.valorPago' class="form-control form-control-sm">
+                </div>
+                <div class="col-3">
+                  <label>Troco:</label>
+                  <input type="number" step="0.01"
+                    v-bind:value='subtraction((comanda.valorPago || 0), commandValue(comanda))'
+                    class="form-control form-control-sm" disabled>
+                </div>
+
+              </div>
+
+              <div class="d-flex flex-row-reverse justify-content-start align-items-center mt-5 mb-2">
+
+                <button type="submit" class="btn btn-success btn-acao-pedido ms-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                    class="bi bi-file-earmark-check" viewBox="0 0 16 16">
+                    <path
+                      d="M10.854 7.854a.5.5 0 0 0-.708-.708L7.5 9.793 6.354 8.646a.5.5 0 1 0-.708.708l1.5 1.5a.5.5 0 0 0 .708 0l3-3z" />
+                    <path
+                      d="M14 14V4.5L9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2zM9.5 3A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h5.5v2z" />
+                  </svg>
+                  <span>Salvar</span>
+                </button>
+                <button type="button" class="btn btn-primary btn-acao-pedido ms-2" v-if="comanda.id"
+                  v-on:click="despacharComanda">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                    class="bi bi-box-arrow-right" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd"
+                      d="M10 12.5a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v2a.5.5 0 0 0 1 0v-2A1.5 1.5 0 0 0 9.5 2h-8A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-2a.5.5 0 0 0-1 0v2z" />
+                    <path fill-rule="evenodd"
+                      d="M15.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 0 0-.708.708L14.293 7.5H5.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3z" />
+                  </svg>
+                  <span>Despachar</span>
+                </button>
+                <button type="button" class="btn btn-secondary btn-acao-pedido ms-2" v-if="comanda.id"
+                  v-on:click="() => { imprimirComanda(comanda.id) }">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                    class="bi bi-receipt" viewBox="0 0 16 16">
+                    <path
+                      d="M1.92.506a.5.5 0 0 1 .434.14L3 1.293l.646-.647a.5.5 0 0 1 .708 0L5 1.293l.646-.647a.5.5 0 0 1 .708 0L7 1.293l.646-.647a.5.5 0 0 1 .708 0L9 1.293l.646-.647a.5.5 0 0 1 .708 0l.646.647.646-.647a.5.5 0 0 1 .708 0l.646.647.646-.647a.5.5 0 0 1 .801.13l.5 1A.5.5 0 0 1 15 2v12a.5.5 0 0 1-.053.224l-.5 1a.5.5 0 0 1-.8.13L13 14.707l-.646.647a.5.5 0 0 1-.708 0L11 14.707l-.646.647a.5.5 0 0 1-.708 0L9 14.707l-.646.647a.5.5 0 0 1-.708 0L7 14.707l-.646.647a.5.5 0 0 1-.708 0L5 14.707l-.646.647a.5.5 0 0 1-.708 0L3 14.707l-.646.647a.5.5 0 0 1-.801-.13l-.5-1A.5.5 0 0 1 1 14V2a.5.5 0 0 1 .053-.224l.5-1a.5.5 0 0 1 .367-.27zm.217 1.338L2 2.118v11.764l.137.274.51-.51a.5.5 0 0 1 .707 0l.646.647.646-.646a.5.5 0 0 1 .708 0l.646.646.646-.646a.5.5 0 0 1 .708 0l.646.646.646-.646a.5.5 0 0 1 .708 0l.646.646.646-.646a.5.5 0 0 1 .708 0l.646.646.646-.646a.5.5 0 0 1 .708 0l.509.509.137-.274V2.118l-.137-.274-.51.51a.5.5 0 0 1-.707 0L12 1.707l-.646.647a.5.5 0 0 1-.708 0L10 1.707l-.646.647a.5.5 0 0 1-.708 0L8 1.707l-.646.647a.5.5 0 0 1-.708 0L6 1.707l-.646.647a.5.5 0 0 1-.708 0L4 1.707l-.646.647a.5.5 0 0 1-.708 0l-.509-.51z" />
+                    <path
+                      d="M3 4.5a.5.5 0 0 1 .5-.5h6a.5.5 0 1 1 0 1h-6a.5.5 0 0 1-.5-.5zm0 2a.5.5 0 0 1 .5-.5h6a.5.5 0 1 1 0 1h-6a.5.5 0 0 1-.5-.5zm0 2a.5.5 0 0 1 .5-.5h6a.5.5 0 1 1 0 1h-6a.5.5 0 0 1-.5-.5zm0 2a.5.5 0 0 1 .5-.5h6a.5.5 0 0 1 0 1h-6a.5.5 0 0 1-.5-.5zm8-6a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 0 1h-1a.5.5 0 0 1-.5-.5zm0 2a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 0 1h-1a.5.5 0 0 1-.5-.5zm0 2a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 0 1h-1a.5.5 0 0 1-.5-.5zm0 2a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 0 1h-1a.5.5 0 0 1-.5-.5z" />
+                  </svg>
+                  <span>Imprimir</span>
+                </button>
+
+                <button type="button" class="btn btn-danger btn-acao-pedido me-auto" v-on:click="excluirComanda"
+                  v-if="comanda.id">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-lg"
+                    viewBox="0 0 16 16">
+                    <path
+                      d="M1.293 1.293a1 1 0 0 1 1.414 0L8 6.586l5.293-5.293a1 1 0 1 1 1.414 1.414L9.414 8l5.293 5.293a1 1 0 0 1-1.414 1.414L8 9.414l-5.293 5.293a1 1 0 0 1-1.414-1.414L6.586 8 1.293 2.707a1 1 0 0 1 0-1.414z" />
+                  </svg>
+                  <span>Excluir Comanda</span>
+                </button>
+
+              </div>
+
+            </div>
+          </div>
+
+        </form>
+
+      </div>
+    </div>
+
+  </main>
+
+  <footer class="bg-dark text-light d-none d-md-block"></footer>
+
+  <div id="modalMap" class="modal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title"></h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div id="boxMap" class="modal-body" style="height: 80vh;"></div>
+      </div>
+    </div>
+  </div>
+
+  <iframe name="impressaoComanda" src="./impressaocomanda.html" frameborder="0" hidden></iframe>
+
+  <script src="../../assets/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script src="../../assets/numeral/numeral.min.js"></script>
+  <script src="../../assets/notyf/notyf.min.js"></script>
+  <script src="../../assets/axios.min.js"></script>
+  <script src="../../assets/geolib.min.js"></script>
+  <script src="../../assets/vue.min.js"></script>
+  <script src="../../assets/storage.js"></script>
+  <script src="../../scripts/main.js"></script>
+  <script src="../../scripts/init.js"></script>
+
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAqAxSk3oapj5sQIxOwhA8cAMygwzrrC4A&v=weekly"
+    async></script>
+
+  <script>
+    const stComandas = new Storage({
+      key: "sales",
+      st: localStorage,
+    });
+    const $frameImpressaoComanda = window.frames['impressaoComanda'];
+    const notyf = new Notyf();
+
+    stComandas.onChange = ({ data }) => {
+      v.comandas = data.filter(c => !c.despachado_em);
+    }
+
+    const abrirWhatsapp = (contato) => {
+      window.open(`https://wa.me/55${somenteNumeros(contato)}`);
+    }
+
+    const v = new Vue({
+      el: 'main',
+      data: {
+        comandas: [],
+        cardapio: [],
+        comanda: {
+          itens: []
+        },
+        comandaItem: {},
+        clienteTemp: {}
+      },
+      methods: {
+        adicionarItem: function () {
+          const $novoItem = document.querySelector('#sectionNovoItem');
+          const { idx, valor, quantidade } = this.comandaItem;
+          const { nome } = this.cardapio[idx];
+
+          this.comanda.itens.push({ nome, valor, quantidade });
+          this.limparCamposNovoItem();
+          $novoItem.querySelector('select').focus();
+
+          this.salvarComanda();
+        },
+        removerItem: function (idx) {
+          if (!confirm('Deseja realmente remover este item?')) return;
+
+          this.comanda.itens.splice(idx, 1);
+
+          this.salvarComanda();
+        },
+        atualizarValorCampoItem: function () {
+          const { idx } = this.comandaItem;
+
+          this.comandaItem.valor = this.cardapio[idx].valor;
+        },
+        limparCamposNovoItem: function () {
+          this.comandaItem = { idx: 0, quantidade: 1 };
+          this.atualizarValorCampoItem();
+        },
+
+        limparFormulario: function () {
+          this.comanda = { itens: [] };
+          this.clienteTemp = {};
+        },
+        salvarComanda: async function () {
+          const { comanda, comandas } = this;
+          await calcularDistancia();
+
+          const novaComanda = {
+            id: Date.now().toString(),
+            pedido_em: Date.now(),
+            ...comanda,
+            nome: capitalize(comanda.nome),
+            logradouro: capitalize(comanda.logradouro),
+            bairro: capitalize(comanda.bairro),
+            cidade: capitalize(comanda.cidade),
+          };
+
+          const idxComanda = stComandas.filter().findIndex(s => s.id === novaComanda.id);
+
+          if (idxComanda >= 0) {
+            const arrAux = stComandas.filter();
+
+            arrAux.splice(idxComanda, 1, novaComanda);
+            stComandas.data = arrAux;
+          } else {
+            stComandas.push(novaComanda);
+          }
+
+          this.comanda = novaComanda;
+          notyf.success('Comanda salva');
+        },
+        exibirComanda: function (id) {
+          const result = stComandas.find(c => c.id === id);
+
+          this.limparFormulario();
+          this.comanda = result;
+        },
+        excluirComanda: function (id) {
+          if (!confirm('Deseja realmente excluir esta comanda?')) return;
+
+          const idx = stComandas.filter().findIndex(c => c.id === id);
+
+          stComandas.remove(idx);
+          notyf.success('Comanda removida');
+          this.limparFormulario();
+        },
+        imprimirComanda: function (id) {
+          if (!id) {
+            id = this.comanda.id;
+          }
+
+          $frameImpressaoComanda.startPrint(id.toString());
+        },
+        despacharComanda: function () {
+          const comandaEditada = { ...this.comanda, despachado_em: Date.now() };
+          const idxComanda = stComandas.filter().findIndex(s => s.id === comandaEditada.id);
+
+          const arrAux = stComandas.filter();
+
+          arrAux.splice(idxComanda, 1, comandaEditada);
+          stComandas.data = arrAux;
+          notyf.success('Comanda despachada');
+          this.limparFormulario();
+        },
+
+        buscarUltimoPedido: function () {
+          const comparaContatos = ({ nome, contato }) => (
+            (
+              (
+                (contato || '').length >= 8 &&
+                somenteNumeros(contato) === somenteNumeros(this.comanda.contato)
+              ) ||
+              (
+                (contato || '').length >= 8 &&
+                somenteNumeros(contato).slice(-8) === somenteNumeros(this.comanda.contato).slice(-8)
+              ) ||
+              (
+                (this.comanda.nome || '').length > 3 ? new RegExp(this.comanda.nome, 'ig').test((nome || '').trim()) : false
+              )
+            ) &&
+            ((this.comanda.contato || '').length >= 8 || (this.comanda.nome || '').length > 3)
+          );
+
+          const ultComanda = stComandas.data.reverse().find(comparaContatos);
+
+          this.clienteTemp = ultComanda ? ultComanda : {};
+        },
+        recuperarUltimoPedido: function () {
+          const {
+            nome,
+            contato,
+            formaPagamento,
+            logradouro,
+            logradouroNumero,
+            complemento,
+            bairro,
+            cidade,
+            referencia,
+            itens
+          } = this.clienteTemp;
+
+          this.comanda = {
+            nome,
+            contato,
+            logradouro,
+            logradouroNumero,
+            complemento,
+            bairro,
+            cidade,
+            referencia,
+            itens: itens.filter(i => i.nome === 'Taxa de Entrega')
+          }
+
+          this.clienteTemp = {};
+          notyf.success('Comanda recuperada');
+        }
+      }
+    });
+
+
+    async function calcularDistancia() {
+      const _comanda = { ...v.comanda };
+
+      const endereco = `${_comanda.logradouro}, ${_comanda.logradouroNumero} - ${_comanda.bairro}, ${_comanda.cidade}`;
+
+      try {
+        const { data: geoLocalizacao } = await getEndereco(endereco);
+
+        v.comanda.latitude = geoLocalizacao.results[0].geometry.location.lat;
+        v.comanda.longitude = geoLocalizacao.results[0].geometry.location.lng;
+
+        v.comanda.distanciaKm = geolib.getDistance(
+          { latitude: -7.295913, longitude: -39.314163 },
+          { latitude: v.comanda.latitude, longitude: v.comanda.longitude }
+        ) / 1000;
+      } catch (error) {
+        console.log(error, error.response);
+      }
+    }
+
+
+    const mymap = L.map('boxMap').setView([-7.295913, -39.314163], 13);
+    L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=pk.eyJ1Ijoiam9hb2V5bWFyZCIsImEiOiJja3Y5M3Zua3c1eG5oMnhwZ2Y3NXF5bWZnIn0.Vu450WZ15Vvl2QvTZHq5MA', {
+      attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+      maxZoom: 18,
+      id: 'mapbox/streets-v11',
+      tileSize: 512,
+      zoomOffset: -1,
+      accessToken: 'pk.eyJ1Ijoiam9hb2V5bWFyZCIsImEiOiJja3Y5M3Zua3c1eG5oMnhwZ2Y3NXF5bWZnIn0.Vu450WZ15Vvl2QvTZHq5MA'
+    }).addTo(mymap);
+
+    document.getElementById('modalMap').addEventListener('shown.bs.modal', function () {
+      mymap.invalidateSize();
+
+      const ponto = L.latLng(v.comanda.latitude, v.comanda.longitude);
+
+      mymap.setView(ponto, 15);
+      L.marker(ponto).addTo(mymap);
+    });
+
+
+    window.onload = async () => {
+      try {
+        const { c: idComanda } = paramsURL();
+        if (idComanda) {
+          v.comanda = stComandas.find(c => c.id === idComanda)
+        }
+
+        v.cardapio = stEstoque.filter();
+        v.comandas = (stComandas.filter(c => !c.despachado_em) || []);
+
+        v.limparCamposNovoItem();
+      } catch (error) {
+        console.log(error.message, error);
+      }
+    }
+  </script>
+</body>
+
+</html>

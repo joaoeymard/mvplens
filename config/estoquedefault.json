@@ -1,0 +1,65 @@
+[
+  { "categoria": "Eletrônicos", "nome": "Notebook Dell", "valor": 3500.0 },
+  { "categoria": "Eletrônicos", "nome": "Smartphone Samsung", "valor": 1200.0 },
+  { "categoria": "Eletrônicos", "nome": "Monitor LG", "valor": 800.0 },
+  { "categoria": "Eletrônicos", "nome": "Teclado Mecânico", "valor": 250.0 },
+  { "categoria": "Eletrônicos", "nome": "Mouse Sem Fio", "valor": 100.0 },
+  { "categoria": "Móveis", "nome": "Mesa de Escritório", "valor": 600.0 },
+  { "categoria": "Móveis", "nome": "Cadeira Ergonômica", "valor": 450.0 },
+  { "categoria": "Móveis", "nome": "Estante de Livros", "valor": 300.0 },
+  { "categoria": "Móveis", "nome": "Sofá 3 Lugares", "valor": 1200.0 },
+  { "categoria": "Móveis", "nome": "Cama de Casal", "valor": 900.0 },
+  { "categoria": "Eletrodomésticos", "nome": "Geladeira", "valor": 2300.0 },
+  { "categoria": "Eletrodomésticos", "nome": "Fogão", "valor": 800.0 },
+  { "categoria": "Eletrodomésticos", "nome": "Micro-ondas", "valor": 400.0 },
+  {
+    "categoria": "Eletrodomésticos",
+    "nome": "Máquina de Lavar",
+    "valor": 1500.0
+  },
+  {
+    "categoria": "Eletrodomésticos",
+    "nome": "Aspirador de Pó",
+    "valor": 300.0
+  },
+  { "categoria": "Papelaria", "nome": "Caderno Universitário", "valor": 15.0 },
+  { "categoria": "Papelaria", "nome": "Caneta Esferográfica", "valor": 2.0 },
+  { "categoria": "Papelaria", "nome": "Papel Sulfite A4", "valor": 20.0 },
+  { "categoria": "Papelaria", "nome": "Grampeador", "valor": 25.0 },
+  { "categoria": "Papelaria", "nome": "Tesoura", "valor": 10.0 },
+  { "categoria": "Alimentos", "nome": "Arroz 5kg", "valor": 25.0 },
+  { "categoria": "Alimentos", "nome": "Feijão 1kg", "valor": 7.0 },
+  { "categoria": "Alimentos", "nome": "Macarrão 500g", "valor": 4.0 },
+  { "categoria": "Alimentos", "nome": "Óleo de Soja 900ml", "valor": 6.0 },
+  { "categoria": "Alimentos", "nome": "Açúcar 1kg", "valor": 5.0 },
+  { "categoria": "Bebidas", "nome": "Água Mineral 500ml", "valor": 1.5 },
+  { "categoria": "Bebidas", "nome": "Refrigerante 2L", "valor": 7.0 },
+  { "categoria": "Bebidas", "nome": "Suco de Laranja 1L", "valor": 5.0 },
+  { "categoria": "Bebidas", "nome": "Cerveja 350ml", "valor": 3.0 },
+  { "categoria": "Bebidas", "nome": "Vinho 750ml", "valor": 25.0 },
+  { "categoria": "Serviços", "nome": "Consultoria de TI", "valor": 150.0 },
+  {
+    "categoria": "Serviços",
+    "nome": "Manutenção de Computadores",
+    "valor": 100.0
+  },
+  { "categoria": "Serviços", "nome": "Design Gráfico", "valor": 200.0 },
+  {
+    "categoria": "Serviços",
+    "nome": "Desenvolvimento de Sites",
+    "valor": 1000.0
+  },
+  { "categoria": "Serviços", "nome": "Serviço de Limpeza", "valor": 80.0 },
+  { "categoria": "Serviços", "nome": "Consultoria Financeira", "valor": 250.0 },
+  {
+    "categoria": "Serviços",
+    "nome": "Treinamento Corporativo",
+    "valor": 500.0
+  },
+  { "categoria": "Serviços", "nome": "Marketing Digital", "valor": 300.0 },
+  { "categoria": "Sistema", "nome": "Desconto", "valor": -10.0 },
+  { "categoria": "Sistema", "nome": "Taxa de Entrega", "valor": 15.0 },
+  { "categoria": "Sistema", "nome": "Taxa Administrativa", "valor": 5.0 },
+  { "categoria": "Sistema", "nome": "Imposto de Vendas", "valor": 12.0 },
+  { "categoria": "Sistema", "nome": "Incentivo Promocional", "valor": -5.0 }
+]
